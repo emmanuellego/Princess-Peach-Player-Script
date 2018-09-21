@@ -1,0 +1,207 @@
+#TouhouDanmakufu[Player]
+#ScriptVersion[3]
+#ID["PEACH_A"]
+#Title["Princess Peach A"]
+#Text["test"]
+#Image["./Peach Render.png"]
+#ReplayName["PeachA"]
+
+let dir = GetCurrentScriptDirectory;
+let playerID = GetPlayerObjectID;
+let playerObj = ObjPrim_Create(OBJ_SPRITE_2D);
+let hitboxObj = ObjPrim_Create(OBJ_SPRITE_2D);
+let count = -1;
+let isFocus = false;
+
+let shot = dir ~ "Peach Shot.txt";
+let peachTexture = [dir ~ "peach back idle.png", dir ~ "peach sideways.png"];
+let hitboxTexture = dir ~ "hitbox.png";
+
+@Initialize {
+	LoadPlayerShotData(shot);
+	
+	SetPlayerSpeed(5, 2.5);
+	
+	ObjPlayer_AddIntersectionCircleA1(playerID, 0, 0, 2, 16);
+	
+	SetPlayerClip(0+6, 0+24, 384-6, 440-16);
+	
+	SetPlayerRebirthFrame(30);
+	
+	SetPlayerAutoItemCollectLine(120);
+	
+	RenderPlayer;
+	RenderHitbox(GetPlayerX, GetPlayerY);
+}
+
+@Event {
+	alternative(GetEventType)
+	
+	case(EV_REQUEST_SPELL) {
+		if(GetPlayerSpell > 0) {
+			SetScriptResult(true);
+		}
+		else {
+			SetScriptResult(false);
+		}
+	}
+	
+	case(EV_PLAYER_SHOOTDOWN) {
+		ObjRender_SetAlpha(playerObj, 0);
+		SetForbidPlayerShot(true);
+		SetForbidPlayerSpell(true);
+	}
+	
+	case(EV_PLAYER_REBIRTH) {
+		SetForbidPlayerShot(false);
+		SetForbidPlayerSpell(false);
+		ObjRender_SetAlpha(playerObj, 255);
+		SetPlayerInvincibilityFrame(120);
+		SetPlayerSpell(3);
+	}
+}
+
+@MainLoop {
+	if (isKeyPressed(VK_SLOWMOVE)) {
+		isFocus = true;
+	}
+	
+	else if (GetVirtualKeyState(VK_SLOWMOVE) == KEY_PULL) {
+		isFocus = false;
+	}
+	
+	if  (IsPermitPlayerShot) {
+		if (isKeyPressed(VK_SHOT)) {
+			count++;
+			if (count >= 5) {
+				count = 0;
+			}
+		}
+		
+		if (GetVirtualKeyState(VK_SHOT) == KEY_PULL) {
+			count = -1;
+		}
+		
+		// Focused shot
+		if (isFocus) {
+			if (count > 3) {
+				CreatePlayerShotA1(GetPlayerX - 8, GetPlayerY - 20, 20, 270, 0.45, 1, 1);
+				CreatePlayerShotA1(GetPlayerX + 8, GetPlayerY - 20, 20, 270, 0.45, 1, 1);
+			}
+		}
+		
+		// Regular shot
+		else {
+			if (count > 3) {
+				CreatePlayerShotA1(GetPlayerX - 8, GetPlayerY - 20, 20, 260, 0.25, 1, 2);
+				CreatePlayerShotA1(GetPlayerX, GetPlayerY - 20, 20, 270, 0.25, 1, 2);
+				CreatePlayerShotA1(GetPlayerX + 8, GetPlayerY - 20, 20, 280, 0.25, 1, 2);
+			}
+		}
+	}
+	
+	yield;
+}
+
+@Finalize {
+	
+}
+
+// ===== Functions =====
+
+// i'm not writing that long boolean statement twice
+// checks to see if a key is pressed or held
+function isKeyPressed(key) {
+	if(GetVirtualKeyState(key) == KEY_PUSH || GetVirtualKeyState(key) == KEY_HOLD) {
+		return true;
+	}
+	return false;
+}
+
+// ===== Tasks ======
+
+task RenderPlayer {
+	let animFrame = 0;
+	
+	ObjPrim_SetTexture(playerObj, peachTexture[0]);
+	Obj_SetRenderPriorityI(playerObj, 31);
+	ObjRender_SetBlendType(playerObj, BLEND_ALPHA);
+	ObjRender_SetAngleXYZ(playerObj, 0, 0 ,0);
+	ObjRender_SetScaleXYZ(playerObj, 0.7, 0.7, 0);
+	ObjRender_SetAlpha(playerObj, 255);
+	ObjSprite2D_SetSourceRect(playerObj, 0, 0, 75, 110);
+	ObjSprite2D_SetDestCenter(playerObj);
+	ObjRender_SetPosition(playerObj, GetPlayerX, GetPlayerY, 0);
+	
+	while (!Obj_IsDeleted(playerObj)) {
+		ObjRender_SetPosition(playerObj, GetPlayerX, GetPlayerY, 0);
+		
+		if (isKeyPressed(VK_LEFT)) {
+			ObjPrim_SetTexture(playerObj, peachTexture[1]);
+			ObjRender_SetAngleY(playerObj, 0);
+			ObjRender_SetScaleXYZ(playerObj, 0.5, 0.5, 0);
+			ObjSprite2D_SetSourceRect(playerObj, 0 + 64*floor(animFrame / 4), 0, 64 + 64*floor(animFrame / 4), 79);
+			animFrame++;
+			if (animFrame >= 32) {
+				animFrame = 0;
+			}
+			yield;
+		}
+		
+		else if (isKeyPressed(VK_RIGHT)) {
+			ObjPrim_SetTexture(playerObj, peachTexture[1]);
+			ObjRender_SetAngleY(playerObj, 180);
+			ObjRender_SetScaleXYZ(playerObj, 0.5, 0.5, 0);
+			ObjSprite2D_SetSourceRect(playerObj, 0 + 64*floor(animFrame / 4), 0, 64 + 64*floor(animFrame / 4), 79);
+			animFrame++;
+			if (animFrame >= 32) {
+				animFrame = 0;
+			}
+			yield;
+		}
+		
+		else { 
+			ObjPrim_SetTexture(playerObj, peachTexture[0]);
+			ObjRender_SetScaleXYZ(playerObj, 0.7, 0.7, 0);
+			ObjSprite2D_SetSourceRect(playerObj, 0 + 75*floor(animFrame / 4), 0, 75 + 75*floor(animFrame / 4), 110);
+			animFrame++;
+			if (animFrame >= 20) {
+				animFrame = 0;
+			}
+			yield;
+		}
+		
+		yield;
+	}
+}
+
+task RenderHitbox(x, y) {
+	let alpha = 0;
+	let spin = 0;
+	
+	ObjPrim_SetTexture(hitboxObj, hitboxTexture);
+	ObjRender_SetBlendType(hitboxObj, BLEND_ALPHA);
+	Obj_SetRenderPriorityI(hitboxObj, 50);
+	ObjRender_SetAlpha(hitboxObj, 0); // hides the hitbox spright from view
+	ObjRender_SetScaleXYZ(hitboxObj, 1, 1, 0);
+	ObjSprite2D_SetSourceRect(hitboxObj, 0, 0, 60, 60);
+	ObjSprite2D_SetDestCenter(hitboxObj);
+	
+	// Sets up the hitbox sprite to spin and show up
+	while (!Obj_IsDeleted(hitboxObj)) {
+		ObjRender_SetPosition(hitboxObj, GetPlayerX, GetPlayerY, 0);
+		ObjRender_SetAngleZ(hitboxObj, spin);
+		ObjRender_SetAlpha(hitboxObj, alpha);
+		
+		if (isFocus) {
+			alpha = 255;
+		}
+		else {
+			alpha = 0;
+		}
+		
+		spin += 2;
+		
+		yield;
+	}
+}
