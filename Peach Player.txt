@@ -85,17 +85,17 @@ let hitboxTexture = dir ~ "hitbox.png";
 		// Focused shot
 		if (isFocus) {
 			if (count > 3) {
-				CreatePlayerShotA1(GetPlayerX - 8, GetPlayerY - 20, 20, 270, 0.45, 1, 1);
-				CreatePlayerShotA1(GetPlayerX + 8, GetPlayerY - 20, 20, 270, 0.45, 1, 1);
+				CreatePlayerShotA1(GetPlayerX - 8, GetPlayerY - 20, 20, 270, 1.5, 1, 1);
+				CreatePlayerShotA1(GetPlayerX + 8, GetPlayerY - 20, 20, 270, 1.5, 1, 1);
 			}
 		}
 		
 		// Regular shot
 		else {
 			if (count > 3) {
-				CreatePlayerShotA1(GetPlayerX - 8, GetPlayerY - 20, 20, 260, 0.25, 1, 2);
-				CreatePlayerShotA1(GetPlayerX, GetPlayerY - 20, 20, 270, 0.25, 1, 2);
-				CreatePlayerShotA1(GetPlayerX + 8, GetPlayerY - 20, 20, 280, 0.25, 1, 2);
+				CreatePlayerShotA1(GetPlayerX - 8, GetPlayerY - 20, 20, 260, 1, 1, 2);
+				CreatePlayerShotA1(GetPlayerX, GetPlayerY - 20, 20, 270, 1, 1, 2);
+				CreatePlayerShotA1(GetPlayerX + 8, GetPlayerY - 20, 20, 280, 1, 1, 2);
 			}
 		}
 	}
