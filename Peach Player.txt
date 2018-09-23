@@ -54,6 +54,10 @@ let familiarTexture = dir ~ "peach familiar.png";
 	
 	case(EV_PLAYER_SHOOTDOWN) {
 		ObjRender_SetAlpha(playerObj, 0);
+		ObjRender_SetAlpha(familiarObj[0], 0);
+		ObjRender_SetAlpha(familiarObj[1], 0);
+		ObjRender_SetAlpha(familiarObj[2], 0);
+		ObjRender_SetAlpha(familiarObj[3], 0);
 		SetForbidPlayerShot(true);
 		SetForbidPlayerSpell(true);
 	}
@@ -62,6 +66,10 @@ let familiarTexture = dir ~ "peach familiar.png";
 		SetForbidPlayerShot(false);
 		SetForbidPlayerSpell(false);
 		ObjRender_SetAlpha(playerObj, 255);
+		ObjRender_SetAlpha(familiarObj[0], 255);
+		ObjRender_SetAlpha(familiarObj[1], 255);
+		ObjRender_SetAlpha(familiarObj[2], 255);
+		ObjRender_SetAlpha(familiarObj[3], 255);
 		SetPlayerInvincibilityFrame(120);
 		SetPlayerSpell(3);
 	}
@@ -93,8 +101,8 @@ let familiarTexture = dir ~ "peach familiar.png";
 		}
 		
 		if (count > 3) {
-			CreatePlayerShotA1(GetPlayerX + 5, GetPlayerY - 20, 20, 270, 2.5, 1, 2);
-			CreatePlayerShotA1(GetPlayerX - 5, GetPlayerY - 20, 20, 270, 2.5, 1, 2);
+			CreatePlayerShotA1(GetPlayerX + 5, GetPlayerY - 20, 20, 270, 1.8, 1, 2);
+			CreatePlayerShotA1(GetPlayerX - 5, GetPlayerY - 20, 20, 270, 1.8, 1, 2);
 		}
 		
 		if (countF > 3) {
@@ -253,9 +261,9 @@ task TRenderFamiliar {
 			if (y2 < 35) { y2 += 18; }
 		}		
 		
-		ObjRender_SetAngleZ(familiarObj[0], -spin);
+		ObjRender_SetAngleZ(familiarObj[0], spin);
 		ObjRender_SetAngleZ(familiarObj[1], spin);
-		ObjRender_SetAngleZ(familiarObj[2], -spin);
+		ObjRender_SetAngleZ(familiarObj[2], spin);
 		ObjRender_SetAngleZ(familiarObj[3], spin);
 		
 		spin += 7;
