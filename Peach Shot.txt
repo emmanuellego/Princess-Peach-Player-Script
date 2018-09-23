@@ -2,7 +2,7 @@ shot_image = "./peach shot.png"
 
 ShotData {
 	id = 1 // hearts
-	rect = (0, 0, 59, 65)
+	rect = (27, 26, 40, 39)
 	render = ALPHA
 	alpha = 150
 	collision = 16
@@ -10,7 +10,7 @@ ShotData {
 
 ShotData {
 	id = 2 // sparkles
-	rect = (59, 0, 118, 65)
+	rect = (87, 20, 98, 31)
 	render = ALPHA
 	alpha = 150
 	collision = 16

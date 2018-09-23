@@ -10,12 +10,17 @@ let dir = GetCurrentScriptDirectory;
 let playerID = GetPlayerObjectID;
 let playerObj = ObjPrim_Create(OBJ_SPRITE_2D);
 let hitboxObj = ObjPrim_Create(OBJ_SPRITE_2D);
+let familiarObj = [ObjPrim_Create(OBJ_SPRITE_2D), ObjPrim_Create(OBJ_SPRITE_2D), ObjPrim_Create(OBJ_SPRITE_2D), ObjPrim_Create(OBJ_SPRITE_2D)];
 let count = -1;
+let countF = -1;
 let isFocus = false;
+let enemy;
+let angle;
 
 let shot = dir ~ "Peach Shot.txt";
 let peachTexture = [dir ~ "peach back idle.png", dir ~ "peach sideways.png"];
 let hitboxTexture = dir ~ "hitbox.png";
+let familiarTexture = dir ~ "peach familiar.png";
 
 @Initialize {
 	LoadPlayerShotData(shot);
@@ -30,8 +35,9 @@ let hitboxTexture = dir ~ "hitbox.png";
 	
 	SetPlayerAutoItemCollectLine(120);
 	
-	RenderPlayer;
-	RenderHitbox(GetPlayerX, GetPlayerY);
+	TRenderPlayer;
+	TRenderHitbox(GetPlayerX, GetPlayerY);
+	TRenderFamiliar;
 }
 
 @Event {
@@ -62,6 +68,7 @@ let hitboxTexture = dir ~ "hitbox.png";
 }
 
 @MainLoop {
+	enemy = GetAllEnemyID();
 	if (isKeyPressed(VK_SLOWMOVE)) {
 		isFocus = true;
 	}
@@ -73,30 +80,28 @@ let hitboxTexture = dir ~ "hitbox.png";
 	if  (IsPermitPlayerShot) {
 		if (isKeyPressed(VK_SHOT)) {
 			count++;
-			if (count >= 5) {
-				count = 0;
-			}
+			countF++;
+			if (count > 15) { count = 0; }
+			if (countF > 5) { countF = 0; }
+			if (length(enemy) > 0) { angle = atan2(ObjRender_GetY(enemy[0]) - GetPlayerY(), ObjRender_GetX(enemy[0]) - GetPlayerX()); }
+			else { angle = 270; }
 		}
 		
 		if (GetVirtualKeyState(VK_SHOT) == KEY_PULL) {
 			count = -1;
+			countF = -1;
 		}
 		
-		// Focused shot
-		if (isFocus) {
-			if (count > 3) {
-				CreatePlayerShotA1(GetPlayerX - 8, GetPlayerY - 20, 20, 270, 1.5, 1, 1);
-				CreatePlayerShotA1(GetPlayerX + 8, GetPlayerY - 20, 20, 270, 1.5, 1, 1);
-			}
+		if (count > 3) {
+			CreatePlayerShotA1(GetPlayerX + 5, GetPlayerY - 20, 20, 270, 2.5, 1, 2);
+			CreatePlayerShotA1(GetPlayerX - 5, GetPlayerY - 20, 20, 270, 2.5, 1, 2);
 		}
 		
-		// Regular shot
-		else {
-			if (count > 3) {
-				CreatePlayerShotA1(GetPlayerX - 8, GetPlayerY - 20, 20, 260, 1, 1, 2);
-				CreatePlayerShotA1(GetPlayerX, GetPlayerY - 20, 20, 270, 1, 1, 2);
-				CreatePlayerShotA1(GetPlayerX + 8, GetPlayerY - 20, 20, 280, 1, 1, 2);
-			}
+		if (countF > 3) {
+			CreatePlayerShotA1(ObjRender_GetX(familiarObj[0]), ObjRender_GetY(familiarObj[0]), 10, angle, 0.2, 1, 1);
+			CreatePlayerShotA1(ObjRender_GetX(familiarObj[1]), ObjRender_GetY(familiarObj[1]), 10, angle, 0.2, 1, 1);
+			CreatePlayerShotA1(ObjRender_GetX(familiarObj[2]), ObjRender_GetY(familiarObj[2]), 10, angle, 0.2, 1, 1);
+			CreatePlayerShotA1(ObjRender_GetX(familiarObj[3]), ObjRender_GetY(familiarObj[3]), 10, angle, 0.2, 1, 1);
 		}
 	}
 	
@@ -118,9 +123,14 @@ function isKeyPressed(key) {
 	return false;
 }
 
+function distFormula(x, y, x2, y2) {
+	let val = power((x2 - x)^2 + (y2 - y)^2, 0.5);
+	return val;
+}
+
 // ===== Tasks ======
 
-task RenderPlayer {
+task TRenderPlayer {
 	let animFrame = 0;
 	
 	ObjPrim_SetTexture(playerObj, peachTexture[0]);
@@ -175,7 +185,7 @@ task RenderPlayer {
 	}
 }
 
-task RenderHitbox(x, y) {
+task TRenderHitbox(x, y) {
 	let alpha = 0;
 	let spin = 0;
 	
@@ -205,3 +215,85 @@ task RenderHitbox(x, y) {
 		yield;
 	}
 }
+
+task TRenderFamiliar {
+	let spin = 0;
+	let x = 35;
+	let x2 = 15;
+	let y = 9;
+	let y2 = 35;
+	
+	ascent(i in 0 .. 4) {
+		ObjPrim_SetTexture(familiarObj[i], familiarTexture);
+		ObjRender_SetBlendType(familiarObj[i], BLEND_ALPHA);
+		Obj_SetRenderPriorityI(familiarObj[i], 50);
+		ObjRender_SetAlpha(familiarObj[i], 255);
+		ObjRender_SetScaleXYZ(familiarObj[i], 1, 1, 0);
+		ObjSprite2D_SetSourceRect(familiarObj[i], 0, 0, 14, 16);
+		ObjSprite2D_SetDestCenter(familiarObj[i]);
+	}
+	
+	while(!Obj_IsDeleted(playerObj)) {
+		ObjRender_SetPosition(familiarObj[0], GetPlayerX - x, GetPlayerY + y, 0);
+		ObjRender_SetPosition(familiarObj[1], GetPlayerX + x, GetPlayerY + y, 0);
+		ObjRender_SetPosition(familiarObj[2], GetPlayerX - x2, GetPlayerY + y2, 0);
+		ObjRender_SetPosition(familiarObj[3], GetPlayerX + x2, GetPlayerY + y2, 0);
+		
+		if (isFocus) {
+			if (x > 15) { x -= 6; }
+			if (y > -23) { y -= 12; }
+			if (x2 > 7) { x2 -= 6; }
+			if (y2 > -33) { y2 -= 12; }
+		}
+		
+		else {
+			if (x < 35) { x += 6; }
+			if (y < 9) { y += 18; }
+			if (x2 < 15) { x2 += 6; }
+			if (y2 < 35) { y2 += 18; }
+		}		
+		
+		ObjRender_SetAngleZ(familiarObj[0], -spin);
+		ObjRender_SetAngleZ(familiarObj[1], spin);
+		ObjRender_SetAngleZ(familiarObj[2], -spin);
+		ObjRender_SetAngleZ(familiarObj[3], spin);
+		
+		spin += 7;
+		
+		yield;
+	}
+	
+}
+
+/*task CreateFamiliarHomingShot(obj, speed, damage) {
+	let enemy;
+	let px = GetPlayerX();
+	let py = GetPlayerY();
+	let ex;
+	let ey;
+	let closest;
+	let angle;
+	
+	while(!Obj_IsDeleted(playerObj)) {
+		enemy = GetAllEnemyID();
+		
+		if (length(enemy) > 0) {
+			closest = enemy[0];
+			
+			// Loops to find closest enemy at frame
+			// If there's only one enemy, it'll only return enemy[0]
+			ascent (i in 0 .. length(enemy)) {
+				ex = ObjRender_GetX(enemy[i]);
+				ey = ObjRender_GetY(enemy[i]);
+				if (distFormula(ex, ey, px, py) < distFormula(ObjRender_GetX(closest), ObjRender_GetY(closest), px, py)) { closest = enemy[i]; }
+			}
+			angle = atan2(ObjRender_GetY(closest) - py, ObjRender_GetX(closest) - px);
+		}
+		
+		else {
+			angle = 270;
+		}
+		if (countF > 3) { CreatePlayerShotA1(ObjRender_GetX(obj), ObjRender_GetY(obj), speed, angle, damage, 1, 1); }
+		yield;
+	}
+}*/
