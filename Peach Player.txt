@@ -19,6 +19,9 @@ let angle;
 
 let shot = dir ~ "Peach Shot.txt";
 let peachTexture = [dir ~ "peach back idle.png", dir ~ "peach sideways.png"];
+let se = dir ~ "se_plst00.wav";
+let grazeSE = dir ~ "se_graze.wav";
+let deathSE = dir ~ "se_pldead00.wav";
 let hitboxTexture = dir ~ "hitbox.png";
 let familiarTexture = dir ~ "peach familiar.png";
 
@@ -38,6 +41,12 @@ let familiarTexture = dir ~ "peach familiar.png";
 	TRenderPlayer;
 	TRenderHitbox(GetPlayerX, GetPlayerY);
 	TRenderFamiliar;
+}
+
+@Loading {
+	LoadSound(se);
+	LoadSound(grazeSE);
+	LoadSound(deathSE);
 }
 
 @Event {
@@ -73,6 +82,14 @@ let familiarTexture = dir ~ "peach familiar.png";
 		SetPlayerInvincibilityFrame(120);
 		SetPlayerSpell(3);
 	}
+	
+	case(EV_GRAZE) {
+		PlaySE(grazeSE);
+	}
+	
+	case (EV_HIT) {
+		PlaySE(deathSE);
+	}
 }
 
 @MainLoop {
@@ -89,7 +106,7 @@ let familiarTexture = dir ~ "peach familiar.png";
 		if (isKeyPressed(VK_SHOT)) {
 			count++;
 			countF++;
-			if (count > 15) { count = 0; }
+			if (count > 5) { count = 0; }
 			if (countF > 5) { countF = 0; }
 			if (length(enemy) > 0) { angle = atan2(ObjRender_GetY(enemy[0]) - GetPlayerY(), ObjRender_GetX(enemy[0]) - GetPlayerX()); }
 			else { angle = 270; }
@@ -101,15 +118,16 @@ let familiarTexture = dir ~ "peach familiar.png";
 		}
 		
 		if (count > 3) {
-			CreatePlayerShotA1(GetPlayerX + 5, GetPlayerY - 20, 20, 270, 1.8, 1, 2);
-			CreatePlayerShotA1(GetPlayerX - 5, GetPlayerY - 20, 20, 270, 1.8, 1, 2);
+			CreatePlayerShotA1(GetPlayerX + 5, GetPlayerY - 20, 20, 270, 1.4, 1, 2);
+			CreatePlayerShotA1(GetPlayerX - 5, GetPlayerY - 20, 20, 270, 1.4, 1, 2);
+			PlaySE(se);
 		}
 		
 		if (countF > 3) {
-			CreatePlayerShotA1(ObjRender_GetX(familiarObj[0]), ObjRender_GetY(familiarObj[0]), 10, angle, 0.2, 1, 1);
-			CreatePlayerShotA1(ObjRender_GetX(familiarObj[1]), ObjRender_GetY(familiarObj[1]), 10, angle, 0.2, 1, 1);
-			CreatePlayerShotA1(ObjRender_GetX(familiarObj[2]), ObjRender_GetY(familiarObj[2]), 10, angle, 0.2, 1, 1);
-			CreatePlayerShotA1(ObjRender_GetX(familiarObj[3]), ObjRender_GetY(familiarObj[3]), 10, angle, 0.2, 1, 1);
+			CreatePlayerShotA1(ObjRender_GetX(familiarObj[0]), ObjRender_GetY(familiarObj[0]), 10, angle, 0.4, 1, 1);
+			CreatePlayerShotA1(ObjRender_GetX(familiarObj[1]), ObjRender_GetY(familiarObj[1]), 10, angle, 0.4, 1, 1);
+			CreatePlayerShotA1(ObjRender_GetX(familiarObj[2]), ObjRender_GetY(familiarObj[2]), 10, angle, 0.4, 1, 1);
+			CreatePlayerShotA1(ObjRender_GetX(familiarObj[3]), ObjRender_GetY(familiarObj[3]), 10, angle, 0.4, 1, 1);
 		}
 	}
 	
@@ -117,7 +135,9 @@ let familiarTexture = dir ~ "peach familiar.png";
 }
 
 @Finalize {
-	
+	RemoveSound(se);
+	RemoveSound(grazeSE);
+	RemoveSound(deathSE);
 }
 
 // ===== Functions =====
